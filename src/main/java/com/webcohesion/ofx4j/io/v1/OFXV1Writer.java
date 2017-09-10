@@ -16,10 +16,9 @@
 package com.webcohesion.ofx4j.io.v1;
 
 import com.webcohesion.ofx4j.io.OFXWriter;
-
-import java.util.Map;
 import java.io.*;
 import java.util.Arrays;
+import java.util.Map;
 
 /**
  * OFX writer to SGML, suitable for OFX versions < 2.0.
@@ -28,11 +27,28 @@ import java.util.Arrays;
  */
 public class OFXV1Writer implements OFXWriter {
 
+    private boolean writeValuesOnNewLine;
+    private boolean allwaysCloseElement;
+
+    /**
+     * @return the tabLength
+     */
+    public int getTabLength() {
+        return tabLength;
+    }
+
+    /**
+     * @param tabLength the tabLength to set
+     */
+    public void setTabLength(int tabLength) {
+        this.tabLength = tabLength;
+    }
+
     private static final String LINE_SEPARATOR = "\r\n";
     protected boolean headersWritten = false;
     protected final Writer writer;
     private boolean writeAttributesOnNewLine = false;
-    private int aggregateLevel = -1;
+    private int aggregateLevel = 0;
     private int tabLength = 4;
 
     public OFXV1Writer(OutputStream out) {
@@ -92,7 +108,7 @@ public class OFXV1Writer implements OFXWriter {
         print(this.tabify(aggregateLevel) + '<');
         print(aggregateName);
         print('>');
-        if (isWriteAttributesOnNewLine()) {
+        if (this.isWriteAttributesOnNewLine()) {
             println();
         }
     }
@@ -115,26 +131,39 @@ public class OFXV1Writer implements OFXWriter {
             value = value.replaceAll(">", "&gt;");
         }
 
-        --reiniciar logica de modo a teste passar
-        print(this.tabify(this.aggregateLevel++) + '<');
+        //aggregate name
+        this.aggregateLevel++;
+        print(this.tabify(this.aggregateLevel) + '<');
         print(name);
         print('>');
-        this.aggregateLevel--;
-        if (isWriteAttributesOnNewLine()) {
-            println();
-            print(this.tabify(this.aggregateLevel++) + value);
-            println();
-            this.aggregateLevel--;
-            print(this.tabify(this.aggregateLevel--) + "</");
-            print(name);
-            print('>');
-        } else {
-
+        //aggregate value
+        if (this.isWriteAttributesOnNewLine() || this.isWriteValuesOnNewLine()) {
+            if (this.isWriteValuesOnNewLine()) {
+                println();
+                this.aggregateLevel++;
+                print(this.tabify(aggregateLevel));
+                this.aggregateLevel--;
+            }
             print(value);
+            if (this.writeValuesOnNewLine) {
+                println();
+            }
+        } else {
+            print(value);
+        }
+
+        if (this.isAllwaysCloseElement()) {
+            if (this.isWriteValuesOnNewLine()) {
+                print(this.tabify(aggregateLevel));
+            }
             print("</");
             print(name);
             print('>');
+            if (this.isWriteAttributesOnNewLine()) {
+                println();
+            }
         }
+        this.aggregateLevel--;  //Return counter from level
     }
 
     public void writeEndAggregate(String aggregateName) throws IOException {
@@ -183,8 +212,30 @@ public class OFXV1Writer implements OFXWriter {
     }
 
     private String tabify(int aggregateLevel) {
-        char[] chars = new char[this.tabLength * aggregateLevel];
-        Arrays.fill(chars, ' ');
+        char[] chars = new char[this.getTabLength() * aggregateLevel];
+        Arrays.fill(chars, ' '); //space char
         return new String(chars);
+    }
+
+    public boolean isWriteValuesOnNewLine() {
+        return this.writeValuesOnNewLine;
+    }
+
+    public boolean isAllwaysCloseElement() {
+        return this.allwaysCloseElement;
+    }
+
+    /**
+     * @param allwaysCloseElement the allwaysCloseElement to set
+     */
+    public void setAllwaysCloseElement(boolean allwaysCloseElement) {
+        this.allwaysCloseElement = allwaysCloseElement;
+    }
+
+    /**
+     * @param writeValuesOnNewLine the writeValuesOnNewLine to set
+     */
+    public void setWriteValuesOnNewLine(boolean writeValuesOnNewLine) {
+        this.writeValuesOnNewLine = writeValuesOnNewLine;
     }
 }
