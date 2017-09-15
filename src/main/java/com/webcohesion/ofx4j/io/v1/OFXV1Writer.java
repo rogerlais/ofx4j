@@ -104,13 +104,13 @@ public class OFXV1Writer implements OFXWriter {
     }
 
     public void writeStartAggregate(String aggregateName) throws IOException {
-        this.aggregateLevel++;
         print(this.tabify(aggregateLevel) + '<');
         print(aggregateName);
         print('>');
         if (this.isWriteAttributesOnNewLine()) {
             println();
         }
+        this.aggregateLevel++;  // ahead aggregates one level plus
     }
 
     public void writeElement(String name, String value) throws IOException {
@@ -131,8 +131,7 @@ public class OFXV1Writer implements OFXWriter {
             value = value.replaceAll(">", "&gt;");
         }
 
-        //aggregate name
-        this.aggregateLevel++;
+        //aggregate name        
         print(this.tabify(this.aggregateLevel) + '<');
         print(name);
         print('>');
@@ -140,9 +139,7 @@ public class OFXV1Writer implements OFXWriter {
         if (this.isWriteAttributesOnNewLine() || this.isWriteValuesOnNewLine()) {
             if (this.isWriteValuesOnNewLine()) {
                 println();
-                this.aggregateLevel++;
-                print(this.tabify(aggregateLevel));
-                this.aggregateLevel--;
+                print(this.tabify(aggregateLevel + 1));
             }
             print(value);
             if (this.writeValuesOnNewLine) {
@@ -154,7 +151,7 @@ public class OFXV1Writer implements OFXWriter {
 
         if (this.isAllwaysCloseElement()) {
             if (this.isWriteValuesOnNewLine()) {
-                print(this.tabify(aggregateLevel));
+                print(this.tabify(aggregateLevel + 1));
             }
             print("</");
             print(name);
@@ -163,18 +160,16 @@ public class OFXV1Writer implements OFXWriter {
                 println();
             }
         }
-        this.aggregateLevel--;  //Return counter from level
     }
 
     public void writeEndAggregate(String aggregateName) throws IOException {
-
+        this.aggregateLevel--;  //aggregate ahead one level less
         print(this.tabify(this.aggregateLevel) + "</");
         print(aggregateName);
         print('>');
         if (isWriteAttributesOnNewLine()) {
             println();
         }
-        this.aggregateLevel--;
     }
 
     public boolean isWriteAttributesOnNewLine() {
