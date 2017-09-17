@@ -43,7 +43,7 @@ public class TestOFXV1Writer extends TestCase {
         value.getBuffer().setLength(0); //clear old value
         writer.writeElement("NAME", "&<>");
         String fourSpaces = "    ";
-        assertEquals(fourSpaces + "<NAME>\r\n" + fourSpaces + fourSpaces + "&amp;&lt;&gt;\r\n" + fourSpaces + "</NAME>\r\n", value.toString());
+        assertEquals("<NAME>\r\n" + fourSpaces + "&amp;&lt;&gt;\r\n" + fourSpaces + "</NAME>\r\n", value.toString());
     }
 
 }
