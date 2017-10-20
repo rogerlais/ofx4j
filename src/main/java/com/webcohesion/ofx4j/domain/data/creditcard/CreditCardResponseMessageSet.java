@@ -85,6 +85,7 @@ public class CreditCardResponseMessageSet extends ResponseMessageSet {
 
   // Inherited.
   public List<ResponseMessage> getResponseMessages() {
-    return new ArrayList<ResponseMessage>(statementResponses);
+        ArrayList<ResponseMessage> ret = new ArrayList<ResponseMessage>(statementResponses);
+        return ret;
   }
 }
